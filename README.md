@@ -210,3 +210,81 @@ See [deployment folder](./deploy) for deploying into Kubernetes with Helm or int
 - Aug 2017 - Minor changes and fixes for CRLF stuff
 - July 2017 - Updated Dockerfile to use super tiny Alpine Node 6 image
 - June 2017 - Moved repo to Github
+
+# Terraform Infrastructure Setup
+
+This repository contains Terraform code to provision infrastructure for the `nodejs-demoapp`, including:
+- VPC and subnets
+- EC2 instances
+- Auto Scaling Group
+- Application Load Balancer (ALB)
+- Security Groups
+- SNS notifications
+
+
+## 🔧 Prerequisites
+
+- [Terraform](https://developer.hashicorp.com/terraform/downloads) installed 
+- AWS CLI configured with credentials (`aws configure`)
+- IAM user/role with sufficient permissions to manage infrastructure
+
+## ⚙️ Configuration
+
+Edit the `terraform.tfvars` file to customize your setup:
+
+```hcl
+region              = "eu-north-1"
+instance_type       = "t3.micro"
+ami_id              = "ami-0c1ac8a41498c1a9c"
+vpc_cidr            = "10.0.0.0/16"
+public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
+notification_email  = "your_email@example.com"
+```
+
+## 🚀 How to Deploy
+
+Follow these steps to deploy the infrastructure using Terraform:
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/<your-username>/nodejs-demoapp.git
+cd nodejs-demoapp/infrastructure
+```
+### 2. Initialize Terraform
+
+Run the following command to download all necessary Terraform providers and modules:
+
+```bash
+terraform init
+```
+### 3. Plan the Deployment
+
+To preview the infrastructure that Terraform will create:
+
+```bash
+terraform plan -var-file="terraform.tfvars"
+```
+### 4. Apply the Deployment
+
+To apply and provision the infrastructure:
+
+```bash
+terraform apply -var-file="terraform.tfvars"
+```
+Type `yes` when prompted to confirm the deployment.
+
+⏳ Wait until Terraform finishes the deployment.  
+Once it's done, you will see the **outputs** section printed in your terminal.  
+Look for the **ALB DNS name** — this is the address where your application is accessible.
+
+📧 After deployment, check your email inbox for a confirmation message from AWS SNS.  
+You **must confirm** your subscription by clicking the link in that email to start receiving notifications.
+
+### 5. Cleanup (Destroy Infrastructure)
+
+To remove all resources when you're done:
+
+```bash
+terraform destroy -var-file="terraform.tfvars"
+```
