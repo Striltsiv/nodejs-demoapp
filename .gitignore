@@ -7,3 +7,13 @@ myvalues.yaml
 secrets.sh
 .secrets
 myparams.json
+# Terraform state
+*.tfstate
+*.tfstate.backup
+# Crash logs
+crash.log
+# Terraform plan files
+*.tfplan
+# .terraform directory (cache & providers)
+.terraform/
+.terraform.lock.hcl
