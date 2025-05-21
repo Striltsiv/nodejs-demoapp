@@ -1,42 +1,48 @@
+# --------------------------------------------------
 # Launch template for EC2 instances
+# --------------------------------------------------
 resource "aws_launch_template" "app" {
   name_prefix   = "app-template-"                      # Prefix for the launch template name
-  image_id      = var.ami_id                          # AMI ID for the EC2 instance
-  instance_type = var.instance_type                   # Instance type (e.g., t2.micro)
+  image_id      = var.ami_id                           # AMI ID for the EC2 instance
+  instance_type = var.instance_type                    # Instance type (e.g., t2.micro)
 
   user_data = base64encode(file("${path.module}/../user_data/user_data.sh")) # Bootstrap script to install app
 
   network_interfaces {
-    associate_public_ip_address = true                # Assign public IP to the instance
+    associate_public_ip_address = true                 # Assign public IP to the instance
     security_groups             = [aws_security_group.ec2_sg.id] # Attach EC2 security group
   }
 
   lifecycle {
-    create_before_destroy = true                      # Create new template before destroying the old one
+    create_before_destroy = true                       # Create new template before destroying the old one
   }
 }
 
+# --------------------------------------------------
 # Auto Scaling Group to manage EC2 instances
+# --------------------------------------------------
 resource "aws_autoscaling_group" "app" {
-  desired_capacity     = 1                            # Number of instances to maintain
-  max_size             = 3                            # Maximum number of instances
-  min_size             = 1                            # Minimum number of instances
-  vpc_zone_identifier  = aws_subnet.public[*].id      # Use public subnets for instances
-  target_group_arns    = [aws_lb_target_group.app.arn]# Attach instances to target group
+  desired_capacity    = 1                             # Number of instances to maintain
+  max_size            = 3                             # Maximum number of instances
+  min_size            = 1                             # Minimum number of instances
+  vpc_zone_identifier = aws_subnet.public[*].id      # Use public subnets for instances
+  target_group_arns   = [aws_lb_target_group.app.arn]# Attach instances to target group
 
   launch_template {
     id      = aws_launch_template.app.id              # Reference the launch template
-    version = "$Latest"                               # Use the latest version
+    version = "$Latest"                                # Use the latest version
   }
 
   tag {
     key                 = "Name"
     value               = "nodejs-instance"           # Name tag for EC2 instances
-    propagate_at_launch = true                        # Apply the tag at instance launch
+    propagate_at_launch = true                         # Apply the tag at instance launch
   }
 }
 
+# --------------------------------------------------
 # Security group for EC2 instances
+# --------------------------------------------------
 resource "aws_security_group" "ec2_sg" {
   name        = "ec2_sg"
   description = "Allow HTTP from ALB"
@@ -46,7 +52,7 @@ resource "aws_security_group" "ec2_sg" {
     from_port       = 80                              # Allow HTTP traffic from ALB
     to_port         = 80
     protocol        = "tcp"
-    security_groups = [aws_security_group.lb_sg.id]   # Only allow from the load balancer SG
+    security_groups = [aws_security_group.lb_sg.id]  # Only allow from the load balancer SG
   }
 
   egress {
@@ -57,16 +63,20 @@ resource "aws_security_group" "ec2_sg" {
   }
 }
 
+# --------------------------------------------------
 # Application Load Balancer
+# --------------------------------------------------
 resource "aws_lb" "app" {
   name               = "app-lb"                       # Load balancer name
-  internal           = false                          # Public facing
+  internal           = false                           # Public facing
   load_balancer_type = "application"                  # ALB type
   subnets            = aws_subnet.public[*].id        # Place in public subnets
   security_groups    = [aws_security_group.lb_sg.id]  # Use LB security group
 }
 
+# --------------------------------------------------
 # Target group for the load balancer
+# --------------------------------------------------
 resource "aws_lb_target_group" "app" {
   name     = "app-target-group"
   port     = 80                                       # Forward traffic to port 80
@@ -74,10 +84,10 @@ resource "aws_lb_target_group" "app" {
   vpc_id   = aws_vpc.main.id
 
   health_check {
-    path                = "/"                         # Health check endpoint
+    path                = "/"                          # Health check endpoint
     port                = "80"
     protocol            = "HTTP"
-    matcher             = "200"                       # Expect HTTP 200 response
+    matcher             = "200"                        # Expect HTTP 200 response
     interval            = 30
     timeout             = 5
     healthy_threshold   = 2
@@ -85,7 +95,9 @@ resource "aws_lb_target_group" "app" {
   }
 }
 
+# --------------------------------------------------
 # Listener to forward traffic from ALB to target group
+# --------------------------------------------------
 resource "aws_lb_listener" "app" {
   load_balancer_arn = aws_lb.app.arn
   port              = 80                              # Listen on HTTP port
@@ -97,7 +109,9 @@ resource "aws_lb_listener" "app" {
   }
 }
 
+# --------------------------------------------------
 # Security group for the Load Balancer
+# --------------------------------------------------
 resource "aws_security_group" "lb_sg" {
   name        = "lb_sg"
   description = "Allow HTTP"
