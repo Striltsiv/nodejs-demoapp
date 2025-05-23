@@ -248,7 +248,7 @@ Follow these steps to deploy the infrastructure using Terraform:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/<your-username>/nodejs-demoapp.git
+git clone https://github.com/Striltsiv/nodejs-demoapp.git
 cd nodejs-demoapp/infrastructure
 ```
 ### 2. Initialize Terraform
@@ -287,4 +287,64 @@ To remove all resources when you're done:
 
 ```bash
 terraform destroy -var-file="terraform.tfvars"
+```
+
+# Terragrunt Infrastructure Setup
+
+This repository contains Terragrunt configuration files for deploying AWS infrastructure modules using Terraform.
+
+## Prerequisites
+
+- [Terraform](https://www.terraform.io/downloads) installed   
+- [Terragrunt](https://terragrunt.gruntwork.io/docs/getting-started/install/) installed  
+- AWS CLI configured with appropriate credentials and permissions  
+- Access to the AWS account and region used in the configuration (`eu-north-1` by default)  
+
+## Getting Started
+
+1. **Clone the repository**
+
+```bash
+git clone https://github.com/Striltsiv/nodejs-demoapp.git
+cd nodejs-demoapp/terragrunt
+```
+
+## How to Run Terragrunt Modules
+
+To deploy the infrastructure using Terragrunt, you should run the modules in the following order to satisfy dependencies:
+
+1. **VPC** — sets up the virtual private cloud and subnets
+2. **SG** (Security Groups) — creates security groups in the VPC
+3. **ALB** (Application Load Balancer) — deploys the load balancer |and target groups.
+
+Save the ALB DNS name output for later use!
+
+4. **EC2** — launches EC2 instances and Auto Scaling Group
+
+### Step-by-step Commands
+
+```bash
+# Navigate to the VPC module folder and apply
+cd dev/vpc
+terragrunt apply
+
+# Then navigate to the Security Group module and apply
+cd ../app/sg
+terragrunt apply
+
+# Next, deploy the Application Load Balancer module
+cd ../app/alb
+terragrunt apply
+
+# Finally, deploy the EC2 / Auto Scaling Group module
+cd ../app/ec2
+terragrunt apply
+```
+### Cleanup (Destroy Infrastructure)
+
+To remove all resources when you're done:
+
+```bash
+cd ../../.. 
+terragrunt destroy -all
 ```
