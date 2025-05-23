@@ -1,21 +1,43 @@
+# --------------------------------------------------
+# Application Load Balancer (ALB)
+# --------------------------------------------------
 resource "aws_lb" "app" {
-  name               = "app-alb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [var.lb_sg_id]
-  subnets            = var.subnets
+  # Name of the ALB
+  name = "app-alb"
 
+  # ALB is internet-facing (public)
+  internal = false
+
+  # Type of load balancer
+  load_balancer_type = "application"
+
+  # Security group assigned to the ALB
+  security_groups = [var.lb_sg_id]
+
+  # Subnets where ALB will be deployed
+  subnets = var.subnets
+
+  # Tags for resource identification
   tags = {
     Name = "app-alb"
   }
 }
 
+# --------------------------------------------------
+# Target Group for ALB
+# --------------------------------------------------
 resource "aws_lb_target_group" "app" {
-  name     = "app-target-group"
+  # Name of the target group
+  name = "app-target-group"
+
+  # Port and protocol the target group listens on
   port     = 80
   protocol = "HTTP"
-  vpc_id   = var.vpc_id
 
+  # VPC in which the target group operates
+  vpc_id = var.vpc_id
+
+  # Health check configuration
   health_check {
     path                = "/"
     protocol            = "HTTP"
@@ -26,11 +48,19 @@ resource "aws_lb_target_group" "app" {
     unhealthy_threshold = 2
   }
 }
-resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.app.arn
-  port              = 80
-  protocol          = "HTTP"
 
+# --------------------------------------------------
+# ALB Listener
+# --------------------------------------------------
+resource "aws_lb_listener" "http" {
+  # ARN of the load balancer
+  load_balancer_arn = aws_lb.app.arn
+
+  # Listener port and protocol
+  port     = 80
+  protocol = "HTTP"
+
+  # Default action: forward requests to the target group
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.app.arn
