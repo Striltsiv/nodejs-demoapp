@@ -281,6 +281,12 @@ Look for the **ALB DNS name** — this is the address where your application is 
 📧 After deployment, check your email inbox for a confirmation message from AWS SNS.  
 You **must confirm** your subscription by clicking the link in that email to start receiving notifications.
 
+![image](https://github.com/user-attachments/assets/186d2697-3cd5-432c-9582-c972d8957619)
+
+
+![image](https://github.com/user-attachments/assets/ce4bee58-1524-483f-91b6-5906fe6120a9)
+
+
 ### 5. Cleanup (Destroy Infrastructure)
 
 To remove all resources when you're done:
@@ -340,6 +346,11 @@ terragrunt apply
 cd ../app/ec2
 terragrunt apply
 ```
+![image](https://github.com/user-attachments/assets/79f1640f-da89-4eac-b6cd-5304f298605f)
+
+![image](https://github.com/user-attachments/assets/5e10ac15-1f58-4247-8fc9-6f096deacbe4)
+
+
 ### Cleanup (Destroy Infrastructure)
 
 To remove all resources when you're done:
